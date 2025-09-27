@@ -234,6 +234,27 @@ docker run -p 8000:8000 story-api
 * [ ] Web frontend for kids to interact with stories.
 
 ---
+## ✨ Try the Story Teller (Custom ChatGPT)
+
+[![Open in ChatGPT](https://img.shields.io/badge/Open%20in-ChatGPT-10a37f?logo=openai&logoColor=white)](https://chatgpt.com/g/g-68d84121f9c881918d0c479e861e405e-story-teller)
+
+**Story Teller** is our kid-safe, bedtime-style writer built with Custom ChatGPT.  
+Give it a simple idea and it returns a short, age-appropriate story split into sections, each with a clear **image prompt** that our API can turn into illustrations—and you can later generate narration (TTS) per section in this repo.
+
+**What it does**
+- Turns your prompt into a wholesome, non-violent children’s story
+- Outputs **sections** with matching **illustration prompts** (perfect for `/v1/story` → images)
+- Supports multiple languages (e.g., English, Arabic, French)
+- Lets you steer tone & format (age, style, number of sections)
+
+**How to use it**
+1. Click **Open in ChatGPT** above (requires a ChatGPT account).
+2. Try a prompt like:  
+   *“A shy hedgehog learns to share (age 6, 5 sections, gentle bedtime tone, English).”*
+3. Copy the section text + image prompts into this project’s API/UI to generate pictures and narration.
+
+> Tip: For dataset-style stories, use our `/v1/chat` endpoint to blend your prompt with similar examples, then optionally run `/v1/story/{id}/images` and `/v1/story/{id}/tts`.
+
 
 ## 👩‍💻 Contributors
 
