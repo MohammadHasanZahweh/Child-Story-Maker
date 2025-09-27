@@ -6,15 +6,15 @@ import json
 import base64
 from typing import Any, Dict
 
-from openai import AsyncOpenAI, APIStatusError
+from openai import OpenAI, APIStatusError
 
 # --- Configuration -----------------------------------------------------------
-TEXT_MODEL = os.getenv("STORY_MODEL", "gpt-4.1-mini")   # good quality/cost balance
-IMAGE_MODEL = os.getenv("IMAGE_MODEL", "gpt-image-1")   # image generator
+TEXT_MODEL = os.getenv("STORY_MODEL", "gpt-5")   # good quality/cost balance
+IMAGE_MODEL = os.getenv("IMAGE_MODEL", "gpt-5")   # image generator
 DEFAULT_IMAGE_SIZE = os.getenv("IMAGE_SIZE", "512x512")
 
 # Create a single async client (httpx under the hood)
-_client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+_client = OpenAI()
 
 # --- Helpers -----------------------------------------------------------------
 def _story_schema(sections: int) -> Dict[str, Any]:
@@ -70,7 +70,7 @@ def _build_story_prompt(*, prompt: str, age: int, language: str, style: str, sec
 # --- Public API --------------------------------------------------------------
 async def generate_story_core(prompt: str, *, age: int, language: str, style: str, sections: int):
     """
-    Calls OpenAI Responses API to produce a structured story:
+    Calls OpenAI Responses API to produce a structured story with json format and 2 main attributes (title and sections, with sections split into 'id','text' and 'image_prompt' ) as follows:
     {
       "title": "...",
       "sections": [
@@ -79,26 +79,32 @@ async def generate_story_core(prompt: str, *, age: int, language: str, style: st
       ]
     }
     """
-    sys_instructions = (
-        "You generate children's stories and strictly follow JSON schemas. "
-        "When asked for structured output, you ONLY produce JSON."
-    )
+    # sys_instructions = (
+    #     "You generate children's stories and strictly follow JSON schemas. "
+    #     "When asked for structured output, you ONLY produce JSON."
+    # )
     user_prompt = _build_story_prompt(
         prompt=prompt, age=age, language=language, style=style, sections=sections
     )
 
     try:
-        resp = await _client.responses.create(
-            model=TEXT_MODEL,
-            instructions=sys_instructions,
-            input=[{"role": "user", "content": user_prompt}],
-            response_format={
-                "type": "json_schema",
-                "json_schema": _story_schema(sections),
-            },
-            temperature=0.9,
-        )
+        print(prompt, age, language, style, sections)
+        # resp = await _client.responses.create(
+        #     model=TEXT_MODEL,
+        #     instructions=sys_instructions,
+        #     input=[{"role": "user", "content": user_prompt}],
+        #     # response_format={
+        #     #     "type": "json_schema",
+        #     #     "json_schema": _story_schema(sections),
+        #     # },
+        #     temperature=0.9,
+        # )
 
+        resp = _client.responses.create(
+        model=TEXT_MODEL,
+        input=user_prompt,
+        )
+        print(resp.output_text)
         # With response_format=json_schema, the model returns JSON text we can parse.
         # In SDK v1+, text is accessible via .output_text; to be robust, fallback to the raw path.
         raw_json = getattr(resp, "output_text", None)
@@ -130,14 +136,30 @@ async def generate_image_core(image_prompt: str, *, size: str = DEFAULT_IMAGE_SI
     Calls OpenAI Images API and returns PNG bytes for the first generated image.
     """
     try:
-        img = await _client.images.generate(
-            model=IMAGE_MODEL,
-            prompt=image_prompt,
-            size=size,
-            response_format="b64_json",
+        # img = await _client.images.generate(
+        #     model=IMAGE_MODEL,
+        #     prompt=image_prompt,
+        #     size=size,
+        #     # response_format="b64_json",
+        # )
+
+        response = _client.responses.create(
+            model="gpt-5",
+            # previous_response_id=previous_message_id,
+            input=image_prompt, #f"generate an image for the page {page}",
+            # size = size,
+            tools=[{"type": "image_generation",
+                    "quality": "medium",}],
         )
-        b64 = img.data[0].b64_json  # type: ignore[attr-defined]
-        return base64.b64decode(b64)
+        image_data = [
+            output.result
+            for output in response.output
+            if output.type == "image_generation_call"
+        ]
+
+        if image_data:
+            image_base64 = image_data[0]
+            return base64.b64decode(image_base64)
     except APIStatusError as e:
         raise RuntimeError(f"OpenAI Images API error ({e.status_code}): {e.message}") from e
     except Exception as e:

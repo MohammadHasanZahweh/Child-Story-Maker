@@ -106,56 +106,57 @@ async def create_story(req: CreateStoryReq):
     """
     Create a story (and optionally its images).
     """
-    try:
-        story = await generate_story_core(
-            prompt=req.prompt,
-            age=req.age,
-            language=req.language,
-            style=req.style or "default",
-            sections=req.sections,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Story provider error: {e}")
-
-    story_id = f"st_{uuid.uuid4().hex[:8]}"
-
-    # Normalize sections for the UI layer
-    norm_sections: List[Dict[str, Any]] = [
-        {
-            "id": s["id"],
-            "text": s["text"],
-            "image_prompt": s["image_prompt"],
-            "image_url": None,
-            "audio_url": None,
-        }
-        for s in story["sections"]
-    ]
-
-    DB[story_id] = {
-        "title": story["title"],
-        "sections": norm_sections,
-        "status": "ready",
-    }
-
-    if req.generate_images:
-        DB[story_id]["status"] = "generating-images"
+    for i in range(3):
         try:
-            for s in norm_sections:
-                img_bytes = await generate_image_core(
-                    s["image_prompt"], size=req.image_size
-                )
-                s["image_url"] = save_image_bytes(story_id, s["id"], img_bytes)
+            story = await generate_story_core(
+                prompt=req.prompt,
+                age=req.age,
+                language=req.language,
+                style=req.style or "default",
+                sections=req.sections,
+            )
         except Exception as e:
-            DB[story_id]["status"] = "ready"  # fail soft; client can retry images
-            raise HTTPException(status_code=502, detail=f"Image provider error: {e}")
-        DB[story_id]["status"] = "ready"
-
-    return {
-        "story_id": story_id,
-        "title": DB[story_id]["title"],
-        "sections": DB[story_id]["sections"],
-        "status": DB[story_id]["status"],
-    }
+            raise HTTPException(status_code=502, detail=f"Story provider error: {e}")
+    
+        story_id = f"st_{uuid.uuid4().hex[:8]}"
+    
+        # Normalize sections for the UI layer
+        norm_sections: List[Dict[str, Any]] = [
+            {
+                "id": s["id"],
+                "text": s["text"],
+                "image_prompt": s["image_prompt"],
+                "image_url": None,
+                "audio_url": None,
+            }
+            for s in story["sections"]
+        ]
+    
+        DB[story_id] = {
+            "title": story["title"],
+            "sections": norm_sections,
+            "status": "ready",
+        }
+    
+        if req.generate_images:
+            DB[story_id]["status"] = "generating-images"
+            try:
+                for s in norm_sections:
+                    img_bytes = await generate_image_core(
+                        s["image_prompt"], size=req.image_size
+                    )
+                    s["image_url"] = save_image_bytes(story_id, s["id"], img_bytes)
+            except Exception as e:
+                DB[story_id]["status"] = "ready"  # fail soft; client can retry images
+                raise HTTPException(status_code=502, detail=f"Image provider error: {e}")
+            DB[story_id]["status"] = "ready"
+    
+        return {
+            "story_id": story_id,
+            "title": DB[story_id]["title"],
+            "sections": DB[story_id]["sections"],
+            "status": DB[story_id]["status"],
+        }
 
 
 @app.get("/story/{story_id}", response_model=StoryResp)
