@@ -47,9 +47,9 @@ class Story:
 # Helpers / Constants
 # -----------------------------
 AGE_LEVEL_HINTS = {
-    "3–5 (Pre-K)": "Very short sentences, lots of repetition, simple words, gentle plot.",
-    "6–8 (Grades 1–3)": "Short paragraphs, clear events, simple dialogue, friendly tone.",
-    "9–12 (Middle)": "Longer paragraphs, more detail and vocabulary, light suspense/conflict.",
+    "3-5 (Pre-K)": "Very short sentences, lots of repetition, simple words, gentle plot.",
+    "6-8 (Grades 1-3)": "Short paragraphs, clear events, simple dialogue, friendly tone.",
+    "9-12 (Middle)": "Longer paragraphs, more detail and vocabulary, light suspense/conflict.",
 }
 
 LANG_CHOICES = ["English", "Arabic", "French"]
