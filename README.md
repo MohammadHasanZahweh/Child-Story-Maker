@@ -264,8 +264,9 @@ Give it a simple idea and it returns a short, age-appropriate story split into s
 
 ## 👩‍💻 Contributors
 
-* **You** – Project lead & developer
-* (Add collaborators here)
+* Mohammad Jawad
+* Mohammad Hassan Zahweh
+* Ahmad Jouni
 
 ---
 
