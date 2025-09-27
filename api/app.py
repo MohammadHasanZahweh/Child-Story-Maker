@@ -75,6 +75,7 @@ class CreateStoryReq(BaseModel):
     generate_images: bool = True
     image_size: str = Field(default="512x512", pattern=r"^\d{2,4}x\d{2,4}$")
     model_config = ConfigDict(extra="forbid")
+    title:str = Field(default="")
 
 
 class ImagesReq(BaseModel):
@@ -117,9 +118,9 @@ async def create_story(req: CreateStoryReq):
             )
         except Exception as e:
             raise HTTPException(status_code=502, detail=f"Story provider error: {e}")
-    
+
         story_id = f"st_{uuid.uuid4().hex[:8]}"
-    
+
         # Normalize sections for the UI layer
         norm_sections: List[Dict[str, Any]] = [
             {
@@ -131,13 +132,15 @@ async def create_story(req: CreateStoryReq):
             }
             for s in story["sections"]
         ]
-    
+
         DB[story_id] = {
             "title": story["title"],
             "sections": norm_sections,
             "status": "ready",
         }
-    
+        if not (req.story and len(req.story)):
+            DB[story_id] ["title"] = req.story
+
         if req.generate_images:
             DB[story_id]["status"] = "generating-images"
             try:
@@ -150,7 +153,7 @@ async def create_story(req: CreateStoryReq):
                 DB[story_id]["status"] = "ready"  # fail soft; client can retry images
                 raise HTTPException(status_code=502, detail=f"Image provider error: {e}")
             DB[story_id]["status"] = "ready"
-    
+
         return {
             "story_id": story_id,
             "title": DB[story_id]["title"],

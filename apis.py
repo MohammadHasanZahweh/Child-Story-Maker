@@ -1,9 +1,23 @@
+import requests
 # 1- Story generation: given prompt, title, age_group
 def story_generation(
     prompt, title_hint, age_group, language, style, n_chapters, seed, extra_context
 ):
-    pass
-    return story
+    print("writing story")
+    resp = requests.post(
+        "http://127.0.0.1:8000/story",
+        json={
+            "prompt": prompt,
+            "sections": n_chapters,
+            "age":age_group,
+            "language": language,
+            "style":style,
+            "title":title_hint,
+            "generate_image":False
+        }
+    )
+    print(resp.json())
+    return resp.json()
 
 
 # 2- Image generation in chat:
