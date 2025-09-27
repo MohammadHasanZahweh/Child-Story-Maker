@@ -68,7 +68,7 @@ class StoryResp(BaseModel):
 
 class CreateStoryReq(BaseModel):
     prompt: str = Field(min_length=3, max_length=400)
-    age: int = Field(ge=3, le=12, default="3-5")
+    age :str = Field(default="3-5")
     language: str = Field(default="en", min_length=2, max_length=10)
     style: Optional[str] = Field(default=None, max_length=60)
     sections: int = Field(default=5, ge=3, le=10)
