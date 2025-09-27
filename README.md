@@ -152,6 +152,7 @@ Visit:
 
 **POST** `/image`
 
+
 #### Request body:
 
 ```json
@@ -234,7 +235,7 @@ docker run -p 8000:8000 story-api
 * [ ] Web frontend for kids to interact with stories.
 
 ---
-## ✨ Try the Story Teller (Custom ChatGPT)
+## ✨ Try the Story Teller 
 
 [![Open in ChatGPT](https://img.shields.io/badge/Open%20in-ChatGPT-10a37f?logo=openai&logoColor=white)](https://chatgpt.com/g/g-68d84121f9c881918d0c479e861e405e-story-teller)
 
@@ -255,6 +256,11 @@ Give it a simple idea and it returns a short, age-appropriate story split into s
 
 > Tip: For dataset-style stories, use our `/v1/chat` endpoint to blend your prompt with similar examples, then optionally run `/v1/story/{id}/images` and `/v1/story/{id}/tts`.
 
+<p align="center">
+  <img src="assets/story-builder-ui.jpeg"
+       alt="Story Builder: choose age, language, tone, image style, and chapters, then generate the story"
+       width="900">
+</p>
 
 ## 👩‍💻 Contributors
 
@@ -263,4 +269,4 @@ Give it a simple idea and it returns a short, age-appropriate story split into s
 
 ---
 
-Would you like me to also create a **matching `requirements.txt`** (with FastAPI, requests, python-dotenv, openai, etc.) so you can run this instantly?
+
