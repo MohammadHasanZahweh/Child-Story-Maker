@@ -2,6 +2,9 @@
 import uuid
 from typing import Optional, List, Dict, Any
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -75,7 +78,7 @@ class CreateStoryReq(BaseModel):
 
 
 class ImagesReq(BaseModel):
-    size: str = Field(default="1024x1024", pattern=r"^\d{2,4}x\d{2,4}$")
+    size: str = Field(default="512x512", pattern=r"^\d{2,4}x\d{2,4}$")
 
 
 class TTSReq(BaseModel):
@@ -98,7 +101,7 @@ def health():
     return {"ok": True}
 
 
-@app.post("/v1/story", response_model=StoryResp)
+@app.post("/story", response_model=StoryResp)
 async def create_story(req: CreateStoryReq):
     """
     Create a story (and optionally its images).
@@ -155,7 +158,7 @@ async def create_story(req: CreateStoryReq):
     }
 
 
-@app.get("/v1/story/{story_id}", response_model=StoryResp)
+@app.get("/story/{story_id}", response_model=StoryResp)
 def get_story(story_id: str):
     data = DB.get(story_id)
     if not data:
@@ -168,7 +171,7 @@ def get_story(story_id: str):
     }
 
 
-@app.post("/v1/story/{story_id}/images", response_model=StoryResp)
+@app.post("/story/{story_id}/images", response_model=StoryResp)
 async def generate_images(story_id: str, req: ImagesReq):
     """
     (Re)generate images for each section.
