@@ -60,7 +60,7 @@ def package_story_downloads(story: Story) -> bytes:
     zip_buf = io.BytesIO()
     with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
         story_dict: Dict[str, Any] = asdict(story)
-        for ch in story_dict["chapters"]:
+        for ch in story_dict["sections"]:
             ch.pop("image_bytes", None)
         zf.writestr("story.json", json.dumps(story_dict, ensure_ascii=False, indent=2))
         for idx, ch in enumerate(story.chapters, start=1):

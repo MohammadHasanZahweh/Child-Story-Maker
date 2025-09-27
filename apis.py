@@ -17,7 +17,8 @@ def story_generation(
         }
     )
     print(resp.json())
-    return resp.json()
+    story = Story()
+    return story
 
 
 # 2- Image generation in chat:
